@@ -249,6 +249,19 @@ from models.recommender.rec import recs_essentials, makeup_recommendation
 from flask_cors import CORS
 
 
+import sys
+import os
+
+# Get the absolute path of the current directory (where app.py is)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the parent directory (the project root)
+parent_dir = os.path.dirname(current_dir)
+# Add the project root to Python's path
+sys.path.append(parent_dir)
+
+# Now your imports should work
+from models.skin_tone.skin_tone_knn import identify_skin_tone
+
 # Initialize Flask app
 app = Flask(__name__)
 # Set up CORS with explicit parameters
