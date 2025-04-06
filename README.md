@@ -1,27 +1,73 @@
-# A Recommendation System for Facial Skin Care
+# 🚀 How to Run the Project
 
-This project presents a simple recommendation system designed to help users choose facial skincare products based on their preferences and concerns. It uses user input—such as skin tone, type, and acne level—to display relevant recommendations from a curated product database.
+### 1. Clone this repo and navigate to the project directory
 
-The application is built as a **web app**, combining a Python backend (Flask) and a React-based frontend. The goal is to provide users with a lightweight, accessible tool for skincare product suggestions without relying on machine learning models.
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+```
 
----
+### 2. Set up Python Virtual Environment (optional but recommended)
 
-## 🧱 System Architecture
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-The application consists of:
-- A **frontend** interface where users can capture or upload facial images and input preferences.
-- A **backend** server that processes user inputs and returns product recommendations based on pre-defined rules or similarity matching techniques.
-- A **product dataset** which stores information about available skincare items.
-
-This modular architecture ensures the system can be maintained and scaled easily.
-
-![Architecture Diagram](https://github.com/vinit714/A-Recommendation-system-for-Facial-Skin-Care-using-Machine-Learning-Models/assets/52816788/6971ee9a-4108-43bd-bed7-1687422baecb)
-
----
-
-## ⚙️ Requirements
-
-Install the dependencies using:
+### 3. Install Backend Dependencies
 
 ```bash
 pip install -r requirements.txt
+```
+
+### 4. Start the Backend Server
+
+```bash
+cd backend
+python app.py
+```
+
+### 5. Start the Frontend App
+
+Open another terminal and run:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Your app should now be live at **http://localhost:3000**
+
+---
+
+## 🎯 Features
+
+- Capture or upload facial images  
+- Input skin concerns and preferences  
+- Receive product recommendations instantly  
+- Fully browser-based interface  
+- Works locally with no third-party integrations
+
+---
+
+## 🗝️ Keywords
+
+Recommendation System, Skin Tone, Skin Type, Acne, Web App, Flask, React
+
+---
+
+## 📄 Reference
+
+For an earlier version of this system involving machine learning, refer to the published IEEE paper:
+
+**Efficient Net-based Expert System for Personalized Facial Skincare Recommendations**
+
+> ⚠️ **Note:** This version of the system does **not** include ML models like EfficientNet or CNN.
+
+---
+
+## 📃 License
+
+This project is licensed under the MIT License.
+
