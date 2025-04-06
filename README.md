@@ -57,17 +57,4 @@ Recommendation System, Skin Tone, Skin Type, Acne, Web App, Flask, React
 
 ---
 
-## 📄 Reference
-
-For an earlier version of this system involving machine learning, refer to the published IEEE paper:
-
-**Efficient Net-based Expert System for Personalized Facial Skincare Recommendations**
-
-> ⚠️ **Note:** This version of the system does **not** include ML models like EfficientNet or CNN.
-
----
-
-## 📃 License
-
-This project is licensed under the MIT License.
 
