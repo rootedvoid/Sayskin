@@ -1,90 +1,66 @@
 import React, { useState } from "react";
 
 const Recommendations = () => {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
-  const [skinDetails, setSkinDetails] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleImageChange = (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setSelectedImage(reader.result); // base64
-      setImagePreviewUrl(reader.result);
-      getRecommendations(reader.result); // call backend
+      setImagePreview(reader.result);
+      // Trigger your recommendation logic here
+      getRecommendations(reader.result); // passing base64 string
     };
     reader.readAsDataURL(file);
   };
 
-  const getRecommendations = async (imageBase64) => {
-    setLoading(true);
-    try {
-      const response = await fetch("https://sayskin.onrender.com/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ image: imageBase64 }),
-      });
+  const getRecommendations = (imageData) => {
+    // Example placeholder for recommendation logic
+    // You could call an API with imageData or use local logic
+    console.log("Processing image for recommendations...", imageData);
 
-      const data = await response.json();
-      console.log("Backend response:", data);
-      setSkinDetails({
-        skintone: data.skintone,
-        acne: data.acne,
-      });
-      setRecommendations(data.recommendations || []);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
-    } finally {
-      setLoading(false);
-    }
+    // Simulate dummy recommendations
+    setTimeout(() => {
+      setRecommendations([
+        { id: 1, name: "Hydrating Face Cream", brand: "GlowCo" },
+        { id: 2, name: "Vitamin C Serum", brand: "SkinBright" },
+        { id: 3, name: "Gentle Cleanser", brand: "PureSkin" },
+      ]);
+    }, 1000);
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Upload Your Selfie</h2>
+    <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
+      <h2 className="text-xl font-semibold">Product Recommendations</h2>
+
       <input
         type="file"
         accept="image/*"
-        onChange={handleImageChange}
-        className="mb-4"
+        onChange={handleImageUpload}
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
       />
 
-      {imagePreviewUrl && (
-        <div className="mb-4">
-          <img
-            src={imagePreviewUrl}
-            alt="Preview"
-            className="w-64 h-64 object-cover rounded-xl shadow-lg"
-          />
-        </div>
-      )}
-
-      {loading && <p className="text-blue-500">Analyzing your skin...</p>}
-
-      {skinDetails && (
-        <div className="mb-4">
-          <p><strong>Skin Tone:</strong> {skinDetails.skintone}</p>
-          <p><strong>Acne Level:</strong> {skinDetails.acne}</p>
+      {imagePreview && (
+        <div className="mt-4">
+          <p className="text-sm text-gray-600 mb-2">Uploaded Image:</p>
+          <img src={imagePreview} alt="Uploaded" className="w-32 h-32 object-cover rounded-md border" />
         </div>
       )}
 
       {recommendations.length > 0 && (
-        <div>
-          <h3 className="text-lg font-medium mb-2">Recommended Products:</h3>
+        <div className="mt-4">
+          <h3 className="text-lg font-medium mb-2">Top Matches:</h3>
           <ul className="space-y-2">
-            {recommendations.map((rec, index) => (
+            {recommendations.map((rec) => (
               <li
-                key={index}
-                className="border p-3 rounded-lg shadow-sm bg-white"
+                key={rec.id}
+                className="p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition"
               >
-                <p><strong>{rec.name}</strong></p>
-                <p>{rec.description}</p>
+                <p className="font-semibold">{rec.name}</p>
+                <p className="text-sm text-gray-600">{rec.brand}</p>
               </li>
             ))}
           </ul>
