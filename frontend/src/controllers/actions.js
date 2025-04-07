@@ -1,10 +1,13 @@
+// BASE URL of your backend on Render
+const BASE_URL = "https://sayskin.onrender.com";
+
 export const UploadImage = (imageSrc, navigate) => {
-  fetch("http://localhost:5000/upload", {
+  fetch(`${BASE_URL}/upload`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ file: imageSrc }), // Sending base64 string directly
+    body: JSON.stringify({ file: imageSrc }), // Assuming backend expects "file"
   })
     .then((res) => res.json())
     .then((data) => {
@@ -22,7 +25,7 @@ export const UploadImage = (imageSrc, navigate) => {
 
 export const putForm = (features, currType, currTone, navigate) => {
   console.log("Submitting form with:", features, currType, currTone);
-  fetch("http://localhost:5000/recommend", {
+  fetch(`${BASE_URL}/recommend`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
