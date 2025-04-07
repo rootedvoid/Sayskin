@@ -1,73 +1,121 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+
+// MUI
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import FormLabel from '@mui/material/FormLabel';
+import Typography from '@mui/material/Typography';
+
+import ProductCard from './Components/ProductCard'
+import { useLocation } from 'react-router';
+
+
+
+// {'face-moisturisers': [{'brand': 'azani active care',
+//    'name': 'unisex acne rescue cream - 30 ml',
+//    'price': '₹ 399',
+//    'url': 'https://www.myntra.com/face-moisturisers/azani-active-care/azani-active-care-unisex-acne-rescue-cream---30-ml/15322518/buy',
+//    'skin type': 'all',
+//    'concern': ['deep nourishment', 'acne', 'blemishes', 'dull skin']},
+
+const Products = {
+    
+    skinCare:
+    {
+        'face-moisturisers':
+            [{
+                'brand': 'azani active care',
+                'name': 'unisex acne rescue cream - 30 ml',
+                'price': '₹ 399',
+                'url': 'https://www.myntra.com/face-moisturisers/azani-active-care/azani-active-care-unisex-acne-rescue-cream---30-ml/15322518/buy',
+                'skin type': 'all',
+                'concern': ['deep nourishment', 'acne', 'blemishes', 'dull skin']
+            },
+            {
+                'brand': 'mamaearth',
+                'name': 'vitamin c face milk with peach for skin illumination 100 ml',
+                'price': '₹ 404',
+                'url': 'https://www.myntra.com/face-moisturisers/mamaearth/mamaearth-vitamin-c-face-milk-with-peach-for-skin-illumination-100-ml/12411986/buy',
+                'skin type': 'all',
+                'concern': ['acne', 'blemishes', 'pigmentation', 'dull skin']
+            }]
+    },
+    makeUp:
+    {
+        'foundations':
+            [{
+                'brand': 'wet n wild',
+                'name': 'sustainable photo focus matte face primer - partners in prime',
+                'price': '₹ 454',
+                'url': 'https://www.myntra.com/foundation-and-primer/wet-n-wild/wet-n-wild-sustainable-photo-focus-matte-face-primer---partners-in-prime/12045988/buy',
+                'skin type': 'normal',
+                'skin tone': 'light to medium'
+            },
+            {
+                'brand': 'faces canada',
+                'name': 'ultime pro makeup fixer',
+                'price': '₹ 486',
+                'url': 'https://www.myntra.com/foundation-and-primer/faces-canada/faces-canada-ultime-pro-makeup-fixer/2421530/buy',
+                'skin type': 'normal',
+                'skin tone': 'light to medium'
+            }]
+    }
+}
+
 
 const Recommendations = () => {
-  const [imagePreview, setImagePreview] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
+    const {state} = useLocation();
+    const {data} = state; 
+    const {general, makeup} = data;
+    return <>
+        <Container sx={{ marginTop: "2vh", padding: 1 }} alignitems="center" width="inherit">
+            <Typography gutterBottom variant="h4" component="div" marginTop="2vh" textAlign="center">
+                Skin care
+            </Typography>
+            {Object.keys(general).map((type, products) => {
+                return (<div><Typography gutterBottom variant="h5" component="div" marginTop="2vh" color="text.secondary">
+                            {type}
+                        </Typography>
+                        <Grid container spacing={1}>
+                    {general[type].slice(0,4).map((prod) => {
+                        return <Grid item xs={6} md={3}>
+                            <ProductCard
+                                name={prod.name}
+                                brand={prod.brand}
+                                image={prod.img}
+                                price={prod.price}
+                                url={prod.url}
+                                concern={prod.concern} />
+                        </Grid>
+                    })}
+                </Grid></div>)
+            })}
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+            <Typography gutterBottom variant="h4" component="div" marginTop="2vh" textAlign="center">
+                Make up
+            </Typography>
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-      // Trigger your recommendation logic here
-      getRecommendations(reader.result); // passing base64 string
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const getRecommendations = (imageData) => {
-    // Example placeholder for recommendation logic
-    // You could call an API with imageData or use local logic
-    console.log("Processing image for recommendations...", imageData);
-
-    // Simulate dummy recommendations
-    setTimeout(() => {
-      setRecommendations([
-        { id: 1, name: "Hydrating Face Cream", brand: "GlowCo" },
-        { id: 2, name: "Vitamin C Serum", brand: "SkinBright" },
-        { id: 3, name: "Gentle Cleanser", brand: "PureSkin" },
-      ]);
-    }, 1000);
-  };
-
-  return (
-    <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Product Recommendations</h2>
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageUpload}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
-      />
-
-      {imagePreview && (
-        <div className="mt-4">
-          <p className="text-sm text-gray-600 mb-2">Uploaded Image:</p>
-          <img src={imagePreview} alt="Uploaded" className="w-32 h-32 object-cover rounded-md border" />
-        </div>
-      )}
-
-      {recommendations.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-lg font-medium mb-2">Top Matches:</h3>
-          <ul className="space-y-2">
-            {recommendations.map((rec) => (
-              <li
-                key={rec.id}
-                className="p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition"
-              >
-                <p className="font-semibold">{rec.name}</p>
-                <p className="text-sm text-gray-600">{rec.brand}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
+            <FormLabel component="legend">{ }</FormLabel>
+            {/* {Object.keys(Products.makeUp).map((type, products)=>{
+            return (<div><FormLabel component="legend">{type}</FormLabel><Grid container spacing={1}> */}
+            <div>
+            <Grid container spacing={1}>
+            {makeup.map((prod) => {
+                return <Grid item xs={6} md={3}>
+                    <ProductCard
+                        name={prod.name}
+                        brand={prod.brand}
+                        image={prod.img}
+                        price={prod.price}
+                        url={prod.url}
+                        concern={prod.concern} />
+                </Grid>
+            })}
+             </Grid></div>
+            {/* </Grid></div>) */}
+            {/* // })} */}
+        </Container>
+    </>
 };
 
 export default Recommendations;
