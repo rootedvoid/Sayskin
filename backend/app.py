@@ -467,6 +467,57 @@ def upload():
         print(f"Error details: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
 
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    print("==== ANALYZE REQUEST RECEIVED ====")
+    try:
+        # Handle base64 in JSON
+        if request.is_json:
+            data = request.get_json()
+            if "file" not in data:
+                return jsonify({"error": "No file key in JSON"}), 400
+            
+            if ',' in data["file"]:
+                base64_str = data["file"].split(',')[1]
+            else:
+                base64_str = data["file"]
+            
+            image_data = base64.b64decode(base64_str)
+            im = Image.open(BytesIO(image_data))
+        
+        # Handle file upload (form-data)
+        elif 'file' in request.files:
+            uploaded_file = request.files['file']
+            if uploaded_file.filename == '':
+                return jsonify({"error": "No file selected"}), 400
+            im = Image.open(uploaded_file)
+
+        else:
+            return jsonify({"error": "No valid image provided"}), 400
+
+        # Save to static folder
+        file_path = "./static/analyze_input.png"
+        im.save(file_path)
+
+        # Run predictions
+        skin_type = prediction_skin(file_path)
+        acne_type = prediction_acne(file_path)
+        tone = identify_skin_tone(file_path, dataset=skin_tone_dataset)
+
+        # Return predictions
+        result = {
+            "message": "Analysis complete",
+            "type": skin_type,
+            "acne": acne_type,
+            "tone": str(tone)
+        }
+        return jsonify(result), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
 # Recommendation API
 rec_args = reqparse.RequestParser()
 rec_args.add_argument("tone", type=int, required=True)
