@@ -244,8 +244,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from flask import Flask, request, jsonify, send_from_directory
 from flask_restful import Api, Resource, reqparse
-from predict_models import prediction_skin, prediction_acne, identify_skin_tone
-#from models.skin_tone.skin_tone_knn import identify_skin_tone
+from models.skin_tone.skin_tone_knn import identify_skin_tone
 from models.recommender.rec import recs_essentials, makeup_recommendation
 from flask_cors import CORS
 
