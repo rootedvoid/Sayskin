@@ -217,13 +217,18 @@ def upload():
             traceback.print_exc()
             return jsonify({"error": f"Error in tone identification: {str(tone_err)}"}), 500
 
-        # Final response
-        result = {
-            "message": "Image uploaded successfully",
-            "type": skin_type,
-            "tone": str(tone),
-            "acne": acne_type
-        }
+       # Transform skin_type to match frontend expectations
+frontend_skin_type = skin_type.replace("_skin", "")
+if frontend_skin_type == "Oil":
+    frontend_skin_type = "Oily"
+
+# Final response
+result = {
+    "message": "Image uploaded successfully",
+    "type": frontend_skin_type,  # Now "Oily", "Normal", "Dry"
+    "tone": str(tone),
+    "acne": acne_type
+}
         print("Returning successful response:", result)
         return jsonify(result), 200
 
@@ -270,13 +275,18 @@ def analyze():
         acne_type = prediction_acne(file_path)
         tone = identify_skin_tone(file_path, dataset=skin_tone_dataset)
 
-        # Return predictions
-        result = {
-            "message": "Analysis complete",
-            "type": skin_type,
-            "acne": acne_type,
-            "tone": str(tone)
-        }
+       # Transform skin_type to match frontend expectations
+frontend_skin_type = skin_type.replace("_skin", "")
+if frontend_skin_type == "Oil":
+    frontend_skin_type = "Oily"
+
+# Final response
+result = {
+    "message": "Image uploaded successfully",
+    "type": frontend_skin_type,  # Now "Oily", "Normal", "Dry"
+    "tone": str(tone),
+    "acne": acne_type
+}
         return jsonify(result), 200
 
     except Exception as e:
