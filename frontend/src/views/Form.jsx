@@ -87,26 +87,49 @@ const Form = () => {
   const handleAcne = (e) => setAcne(e.target.value);
 
   const handleSubmit = () => {
-    if (currType === 'All') {
-      features['normal'] = true;
-      features['dry'] = true;
-      features['oily'] = true;
-      features['combination'] = true;
-    } else {
-      features[currType.toLowerCase()] = true;
-    }
+    const updatedFeatures = { ...features };
 
-    if (currAcne !== "Low") {
-      features['acne'] = true;
-    }
+if (currType === 'All') {
+  ['normal', 'dry', 'oily', 'combination'].forEach(type => {
+    updatedFeatures[type] = true;
+  });
+} else {
+  updatedFeatures[currType.toLowerCase()] = true;
+}
 
-    for (const key in features) {
-      features[key] = features[key] ? 1 : 0;
-    }
+if (currAcne !== "Low") {
+  updatedFeatures['acne'] = true;
+}
 
-    console.log({ features, type: currType, tone: currTone });
-    putForm(features, currType, currTone, navigate);
-  };
+// Convert booleans to 1 or 0
+Object.keys(updatedFeatures).forEach(key => {
+  updatedFeatures[key] = updatedFeatures[key] ? 1 : 0;
+});
+
+console.log({ features: updatedFeatures, type: currType, tone: currTone });
+putForm(updatedFeatures, currType, currTone, navigate);
+
+    
+    // if (currType === 'All') {
+    //   features['normal'] = true;
+    //   features['dry'] = true;
+    //   features['oily'] = true;
+    //   features['combination'] = true;
+    // } else {
+    //   features[currType.toLowerCase()] = true;
+    // }
+
+    // if (currAcne !== "Low") {
+    //   features['acne'] = true;
+    // }
+
+    // for (const key in features) {
+    //   features[key] = features[key] ? 1 : 0;
+    // }
+
+  //   console.log({ features, type: currType, tone: currTone });
+  //   putForm(features, currType, currTone, navigate);
+  // };
 
   return (
     <Container maxWidth="xs" sx={{ marginTop: "2vh" }} alignitems="center" width="inherit">
