@@ -1,5 +1,5 @@
 // BASE URL of your backend on Render
-const BASE_URL = "https://sayskin.onrender.com";
+const BASE_URL = "https://sayskin-backend.onrender.com";
 
 export const UploadImage = (imageSrc, navigate) => {
   fetch(`${BASE_URL}/upload`, {
