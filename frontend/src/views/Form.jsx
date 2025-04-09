@@ -129,7 +129,7 @@ putForm(updatedFeatures, currType, currTone, navigate);
 
   //   console.log({ features, type: currType, tone: currTone });
   //   putForm(features, currType, currTone, navigate);
-  // };
+  };
 
   return (
     <Container maxWidth="xs" sx={{ marginTop: "2vh" }} alignitems="center" width="inherit">
