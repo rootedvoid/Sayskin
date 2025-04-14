@@ -236,41 +236,80 @@ const createFallbackData = () => {
     }
   };
 };
-export const UploadImage = (imageSrc, navigate) => {
-  console.log("Starting upload process");
+
+export const UploadImage = async (imageSrc, navigate) => {
+  console.log("Preparing to upload image");
   
-  // Format the image data properly
-  let imageData = imageSrc;
-  if (imageSrc && !imageSrc.startsWith('data:image/')) {
-    imageData = `data:image/jpeg;base64,${imageSrc}`;
-  }
-  
-  // Add the required headers for cors-anywhere
-  const headers = {
-    "Content-Type": "application/json",
-    "X-Requested-With": "XMLHttpRequest",  // Required by cors-anywhere
-    "Origin": "https://sayskin-live.onrender.com"  // Your app's origin
-  };
-  
-  // Try with CORS proxy
-  fetch(`https://cors-anywhere.herokuapp.com/https://sayskin-backend.onrender.com/upload`, {
-    method: "POST",
-    headers: headers,
-    body: JSON.stringify({ file: imageData }),
-  })
-  .then(response => {
-    if (!response.ok) {
-      console.error("Server error:", response.status, response.statusText);
-      throw new Error(`Upload failed with status ${response.status}`);
+  try {
+    // First check if server is responsive
+    const isServerUp = await checkServerStatus();
+    if (!isServerUp) {
+      console.warn("Server is not responding. Using fallback data.");
+      const fallbackData = createFallbackData();
+      localStorage.setItem('skinAnalysisData', JSON.stringify(fallbackData.data));
+      navigate("/form", { state: fallbackData });
+      throw new Error("Server is not responding. Using default values instead.");
     }
-    return response.json();
-  })
-  .then(data => {
-    console.log("Upload Success:", data);
     
-    // Format the data for the form
-    let formattedData;
+    console.log("Server is ready, uploading image...");
     
+    // Make sure the image data is properly formatted
+    let imageData = imageSrc;
+    // Check if the image already has a data URL prefix, if not add it
+    if (imageSrc && !imageSrc.startsWith('data:image/')) {
+      imageData = `data:image/jpeg;base64,${imageSrc}`;
+    }
+    
+    // Try upload with each proxy if needed
+    let uploadSuccess = false;
+    let data = null;
+    let formattedData = null;
+    let attempts = 0;
+    const maxAttempts = CORS_PROXIES.length;
+    
+    while (!uploadSuccess && attempts < maxAttempts) {
+      try {
+        const BASE_URL = getBaseUrl();
+        console.log(`Attempting upload using ${BASE_URL}...`);
+        
+        const response = await fetch(`${BASE_URL}/upload`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ file: imageData }),
+        });
+
+        if (!response.ok) {
+          console.error("Server error:", response.status, response.statusText);
+          const errorText = await response.text();
+          throw new Error(`Server responded with status ${response.status}: ${errorText}`);
+        }
+
+        data = await response.json();
+        
+        if (data.error) {
+          console.error("Upload Error:", data.error);
+          throw new Error(data.error);
+        }
+        
+        console.log("Upload Success:", data);
+        uploadSuccess = true;
+      } catch (error) {
+        console.error(`Upload attempt ${attempts+1} failed:`, error);
+        rotateProxy();
+        attempts++;
+        
+        // If this was our last attempt, use fallback
+        if (attempts >= maxAttempts) {
+          console.warn("All upload attempts failed. Using fallback data.");
+          data = createFallbackData();
+          uploadSuccess = true;
+        }
+      }
+    }
+    
+    // Format the data properly for the form component
     if (data.data) {
       // New format with nested data object
       formattedData = data;
@@ -291,35 +330,24 @@ export const UploadImage = (imageSrc, navigate) => {
     }
     
     // Save to localStorage as backup
-    localStorage.setItem('skinAnalysisData', JSON.stringify(formattedData.data));
+    if (formattedData.data) {
+      localStorage.setItem('skinAnalysisData', JSON.stringify(formattedData.data));
+    }
     
     // Navigate to form with analysis data
     navigate("/form", { state: formattedData });
     
     return formattedData;
-  })
-  .catch(err => {
-    console.log("Upload failed:", err);
-    // Use fallback data and redirect to form
-    const fallbackData = createFallbackData();
-    localStorage.setItem('skinAnalysisData', JSON.stringify(fallbackData.data));
-    navigate("/form", { state: fallbackData });
-  });
-};
-
-// Helper function to create fallback data
-const createFallbackData = () => {
-  return {
-    message: "Could not connect to analysis server",
-    data: {
-      type: "Normal", 
-      tone: 3, 
-      acne: "Low"
+    
+  } catch (err) {
+    console.error("Error in UploadImage:", err);
+    
+    // Don't throw if we've already navigated with fallback data
+    if (err.message !== "Server is not responding. Using default values instead.") {
+      throw err; // Re-throw for the component to handle
     }
-  };
+  }
 };
-
-
 
 export const putForm = async (features, currType, currTone, navigate) => {
   console.log("Submitting form with:", features, currType, currTone);
