@@ -159,7 +159,7 @@
 
 
 // BASE URL of your backend on Render
-const BASE_URL = "https://sayskin-backend.onrender.com";
+const BASE_URL = "https://cors-anywhere.herokuapp.com/https://sayskin-backend.onrender.com";
 
 // Check if the server is awake and ready to process requests
 export const checkServerStatus = async () => {
