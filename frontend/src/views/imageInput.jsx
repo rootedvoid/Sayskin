@@ -44,8 +44,8 @@
 // export default ImageInput
 
 
-import React, { useState } from 'react';
-import { UploadImage } from '../controllers/actions';
+import React, { useState, useEffect } from 'react';
+import { UploadImage, checkServerStatus } from '../controllers/actions';
 import { useNavigate } from 'react-router-dom';
 import WebcamCapture from './Components/webCam';
 // MUI
@@ -62,38 +62,89 @@ function ImageInput() {
     const [landingPage, setLandingPage] = useState(true);
     const [imageSrc, setImageSrc] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [serverLoading, setServerLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [retryCount, setRetryCount] = useState(0);
     const navigate = useNavigate();
 
+    // Check server status when component loads
+    useEffect(() => {
+        const wakeUpServer = async () => {
+            setServerLoading(true);
+            try {
+                await checkServerStatus();
+                console.log("Server status checked");
+            } catch (err) {
+                console.log("Server might be starting up...");
+            } finally {
+                setServerLoading(false);
+            }
+        };
+        
+        wakeUpServer();
+    }, []);
+
     // Watch for image capture and process it
-    React.useEffect(() => {
+    useEffect(() => {
         if (imageSrc !== null) {
             console.log("Image captured, starting analysis");
-            setLoading(true);
-            setError(null);
-            
-            UploadImage(imageSrc, navigate)
-                .catch(err => {
-                    console.error("Error during analysis:", err);
-                    setError("Failed to analyze image. Please try again.");
-                    setLandingPage(true); // Go back to landing page on error
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
+            processImage();
         }
-    }, [imageSrc, navigate]);
+    }, [imageSrc, retryCount]);
+
+    const processImage = async () => {
+        if (!imageSrc) return;
+        
+        setLoading(true);
+        setError(null);
+        
+        try {
+            await UploadImage(imageSrc, navigate);
+        } catch (err) {
+            console.error("Error during analysis:", err);
+            
+            // Check if it's a server not responsive error
+            if (err.message && err.message.includes("Server is not responding")) {
+                setError("Server is starting up. This may take a moment on free tier hosting. Please wait...");
+                
+                // If we haven't tried too many times, set up to retry
+                if (retryCount < 3) {
+                    setTimeout(() => {
+                        setRetryCount(prev => prev + 1);
+                    }, 5000); // Wait 5 seconds before retry
+                } else {
+                    setError("Server is taking too long to respond. Please try again later.");
+                    setLandingPage(true);
+                }
+            } else {
+                setError(`Failed to analyze image: ${err.message || "Unknown error"}`);
+                setLandingPage(true);
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRetry = () => {
+        setRetryCount(0);
+        processImage();
+    };
 
     return (
         <>
             <Container maxWidth="xs" sx={{ padding: 0 }} alignitems="center">
                 <Grid container justify="center" sx={{ maxHeight: "100vh" }} spacing={1}>
-                    {loading ? (
+                    {loading || serverLoading ? (
                         <Grid item xs={12} sx={{ margin: "40vh auto", textAlign: "center" }}>
                             <CircularProgress size={60} />
                             <Typography variant="h6" sx={{ mt: 2 }}>
-                                Analyzing your skin...
+                                {serverLoading ? "Connecting to server..." : "Analyzing your skin..."}
                             </Typography>
+                            {loading && retryCount > 0 && (
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                    Retry attempt {retryCount}/3...
+                                </Typography>
+                            )}
                         </Grid>
                     ) : landingPage ? (
                         <Grid item xs={6} sx={{ margin: "40vh auto" }} textAlign="center">
@@ -121,6 +172,13 @@ function ImageInput() {
                     onClose={() => setError(null)}
                     severity="error"
                     sx={{ width: '100%' }}
+                    action={
+                        error && error.includes("Server is starting up") ? (
+                            <Button color="inherit" size="small" onClick={handleRetry}>
+                                RETRY
+                            </Button>
+                        ) : null
+                    }
                 >
                     {error}
                 </Alert>
