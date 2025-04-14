@@ -65,41 +65,24 @@ function ImageInput() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    // Handle image upload and analysis
-    const handleImageUpload = async (imageData) => {
-        if (!imageData) return;
-        
-        setLoading(true);
-        setError(null);
-        
-        try {
-            // Call your existing upload function (you may need to modify the UploadImage function)
-            const result = await UploadImage(imageData, navigate);
-            
-            // If UploadImage doesn't already handle navigation, do it here
-            if (result && result.data) {
-                // Save to localStorage as backup
-                localStorage.setItem('skinAnalysisData', JSON.stringify(result.data));
-                
-                // Navigate to form with data
-                navigate('/form', { state: result });
-            }
-        } catch (err) {
-            console.error("Error during image analysis:", err);
-            setError("Failed to analyze image. Please try again.");
-            setLandingPage(true); // Go back to landing page on error
-        } finally {
-            setLoading(false);
-        }
-    };
-
     // Watch for image capture and process it
     React.useEffect(() => {
         if (imageSrc !== null) {
             console.log("Image captured, starting analysis");
-            handleImageUpload(imageSrc);
+            setLoading(true);
+            setError(null);
+            
+            UploadImage(imageSrc, navigate)
+                .catch(err => {
+                    console.error("Error during analysis:", err);
+                    setError("Failed to analyze image. Please try again.");
+                    setLandingPage(true); // Go back to landing page on error
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
         }
-    }, [imageSrc]);
+    }, [imageSrc, navigate]);
 
     return (
         <>
