@@ -1,4 +1,6 @@
 
+
+
 // import React, { useState, useEffect } from "react";
 // import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -16,6 +18,8 @@
 // import InputLabel from '@mui/material/InputLabel';
 // import MenuItem from '@mui/material/MenuItem';
 // import Select from '@mui/material/Select';
+// import Alert from '@mui/material/Alert';
+// import Snackbar from '@mui/material/Snackbar';
 
 // // controllers
 // import { putForm } from '../controllers/actions';
@@ -51,16 +55,89 @@
 //     "blackheads": false, "whiteheads": false, "blemishes": false, "dark circles": false,
 //     "eye bags": false, "dark spots": false
 //   });
+//   const [notification, setNotification] = useState({
+//     open: false,
+//     message: '',
+//     severity: 'info'
+//   });
 
-//   // Autofill from ML model predictions (received via state)
+//   // Autofill from ML model predictions (received via state or localStorage)
 //   useEffect(() => {
+//     // First try to get data from router state
 //     if (state && state.data) {
+//       console.log("Received analysis data from router state:", state.data);
 //       const { tone, type, acne } = state.data;
 //       if (tone) setCurrTone(parseInt(tone));
 //       if (type) setCurrType(type);
 //       if (acne) setAcne(acne);
+//       setNotification({
+//         open: true,
+//         message: 'Form auto-filled with your skin analysis results!',
+//         severity: 'success'
+//       });
+//     } 
+//     // Then try localStorage as fallback
+//     else {
+//       try {
+//         const savedData = localStorage.getItem('skinAnalysisData');
+//         if (savedData) {
+//           const parsedData = JSON.parse(savedData);
+//           console.log("Loaded analysis data from localStorage:", parsedData);
+//           if (parsedData.tone) setCurrTone(parseInt(parsedData.tone));
+//           if (parsedData.type) setCurrType(parsedData.type);
+//           if (parsedData.acne) setAcne(parsedData.acne);
+//           setNotification({
+//             open: true,
+//             message: 'Loaded your previous skin analysis results',
+//             severity: 'info'
+//           });
+//         }
+//       } catch (error) {
+//         console.error("Error loading data from localStorage:", error);
+//       }
 //     }
 //   }, [state]);
+
+//   // Direct API fetch method (alternative approach)
+//   const fetchAnalysisData = async (imageFile) => {
+//     try {
+//       const formData = new FormData();
+//       formData.append('file', imageFile);
+      
+//       const response = await fetch('/analyze', {
+//         method: 'POST',
+//         body: formData
+//       });
+      
+//       if (!response.ok) {
+//         throw new Error('Analysis failed');
+//       }
+      
+//       const result = await response.json();
+//       if (result.data) {
+//         const { tone, type, acne } = result.data;
+//         if (tone) setCurrTone(parseInt(tone));
+//         if (type) setCurrType(type);
+//         if (acne) setAcne(acne);
+        
+//         // Save to localStorage for persistence
+//         localStorage.setItem('skinAnalysisData', JSON.stringify(result.data));
+        
+//         setNotification({
+//           open: true,
+//           message: 'Skin analysis completed successfully!',
+//           severity: 'success'
+//         });
+//       }
+//     } catch (error) {
+//       console.error("Error during analysis:", error);
+//       setNotification({
+//         open: true,
+//         message: 'Failed to analyze skin image',
+//         severity: 'error'
+//       });
+//     }
+//   };
 
 //   const handleChange = (event) => {
 //     setFeatures({
@@ -72,6 +149,9 @@
 //   const handleTone = (e) => setCurrTone(parseInt(e.target.value));
 //   const handleType = (e) => setCurrType(e.target.value);
 //   const handleAcne = (e) => setAcne(e.target.value);
+//   const handleCloseNotification = () => {
+//     setNotification({...notification, open: false});
+//   };
 
 //   const handleSubmit = () => {
 //     const updatedFeatures = { ...features };
@@ -93,6 +173,10 @@
 //       updatedFeatures[key] = updatedFeatures[key] ? 1 : 0;
 //     }
 
+//     // Save current analysis to localStorage
+//     const analysisData = { type: currType, tone: currTone, acne: currAcne };
+//     localStorage.setItem('skinAnalysisData', JSON.stringify(analysisData));
+
 //     console.log({ features: updatedFeatures, type: currType, tone: currTone });
 //     putForm(updatedFeatures, currType, currTone, navigate);
 //   };
@@ -100,13 +184,28 @@
 //   return (
 //     <Container maxWidth="xs" sx={{ marginTop: "2vh" }} alignitems="center">
 //       <Typography variant="h5" component="div" textAlign="center">
-//         Results
+//         Skin Analysis Results
 //       </Typography>
+
+//       <Snackbar 
+//         open={notification.open} 
+//         autoHideDuration={6000} 
+//         onClose={handleCloseNotification}
+//         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+//       >
+//         <Alert 
+//           onClose={handleCloseNotification} 
+//           severity={notification.severity} 
+//           sx={{ width: '100%' }}
+//         >
+//           {notification.message}
+//         </Alert>
+//       </Snackbar>
 
 //       <FormControl component="fieldset" sx={{ marginTop: "3vh" }}>
 //         <Grid container spacing={2}>
 //           <Grid item xs={9}>
-//             <InputLabel id="tone-select-label">Tone</InputLabel>
+//             <InputLabel id="tone-select-label">Skin Tone</InputLabel>
 //             <Select
 //               labelId="tone-select-label"
 //               id="tone-select"
@@ -133,7 +232,7 @@
 //         </Grid>
 
 //         <Grid marginTop="2vh">
-//           <FormLabel component="legend">Type</FormLabel>
+//           <FormLabel component="legend">Skin Type</FormLabel>
 //           <RadioGroup
 //             row
 //             name="skin-type-group"
@@ -151,7 +250,7 @@
 //         </Grid>
 
 //         <Grid marginTop="2vh">
-//           <FormLabel component="legend">Acne</FormLabel>
+//           <FormLabel component="legend">Acne Severity</FormLabel>
 //           <RadioGroup
 //             row
 //             name="acne-group"
@@ -193,8 +292,9 @@
 //             onClick={handleSubmit}
 //             variant="contained"
 //             fullWidth
+//             color="primary"
 //           >
-//             Submit
+//             Get Recommendations
 //           </Button>
 //         </Grid>
 //       </FormControl>
@@ -227,7 +327,46 @@ import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 
 // controllers
-import { putForm } from '../controllers/actions';
+// Updated putForm function
+export const putForm = (features, currType, currTone, navigate) => {
+  console.log("Submitting form with:", features, currType, currTone);
+  
+  // Add the required headers for cors-anywhere
+  const headers = {
+    "Content-Type": "application/json",
+    "X-Requested-With": "XMLHttpRequest",  // Required by cors-anywhere
+    "Origin": "https://sayskin-live.onrender.com"  // Your app's origin
+  };
+  
+  fetch(`https://cors-anywhere.herokuapp.com/https://sayskin-backend.onrender.com/recommend`, {
+    method: "PUT",
+    headers: headers,
+    body: JSON.stringify({
+      features: features,
+      type: currType,
+      tone: currTone,
+    }),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Submission failed with status ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log("Form submission success:", data);
+    navigate("/recs", { state: { data } });
+  })
+  .catch(err => {
+    console.log("Submission failed:", err);
+    // Use fallback data and redirect to recommendations
+    const fallbackData = {
+      general: ["Cleanser", "Moisturizer", "Sunscreen"],
+      makeup: ["Foundation", "Concealer"]
+    };
+    navigate("/recs", { state: { data: fallbackData } });
+  });
+};
 
 const skinToneValues = [1, 2, 3, 4, 5, 6];
 const skinToneColors = [
