@@ -370,7 +370,7 @@ from flask_cors import CORS
 # Initialize Flask app
 app = Flask(__name__)
 # Set up CORS with explicit parameters
-CORS(app, resources={r"/*": {"origins": "*", 
+CORS(app, resources={r"/*": {"origins": "https://sayskin-live.onrender.com", 
                             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"]}})
 api = Api(app)
